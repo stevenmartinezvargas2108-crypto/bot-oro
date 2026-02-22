@@ -9,30 +9,32 @@ TOKEN_META = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJmMTI3ZTdlZjUzZGJmZ
 
 bot = telebot.TeleBot(TOKEN_TELEGRAM)
 
-async def iniciar_trading():
+async def trading_automatico():
     api = MetaApi(TOKEN_META)
     try:
+        # Conectar a la cuenta de MetaApi
         accounts = await api.metatrader_account_api.get_accounts()
         account = accounts[0]
         connection = account.get_streaming_connection()
         await connection.connect()
         await connection.wait_synchronized()
         
-        bot.send_message(CHAT_ID, "🟢 Bot MT5 conectado y analizando mercados.")
+        bot.send_message(CHAT_ID, "🚀 Robot MT5 Activo (Sin Name Line).\nOperando GOLD y EURUSD.")
 
         for simbolo in ["GOLD", "EURUSD"]:
             tick = await connection.terminal_state.wait_tick(simbolo)
             precio = tick['ask']
             
-            # Gestión de Riesgo (Lotes 0.01)
-            distancia = 2.0 if "GOLD" in simbolo else 0.0010
-            sl, tp = precio - distancia, precio + (distancia * 2)
+            # Gestión: Lote 0.01 | SL 2.0 pips | TP 4.0 pips
+            dist = 2.0 if "GOLD" in simbolo else 0.0010
+            sl, tp = precio - dist, precio + (dist * 2)
 
             await connection.create_market_buy_order(simbolo, 0.01, sl, tp)
-            bot.send_message(CHAT_ID, f"🚀 Compra en {simbolo}\nSL: {sl} | TP: {tp}")
+            bot.send_message(CHAT_ID, f"🎯 Compra en {simbolo}\nPrecio: {precio}\nSL: {sl:.4f} | TP: {tp:.4f}")
 
     except Exception as e:
-        print(f"Error: {e}")
+        bot.send_message(CHAT_ID, f"❌ Error: {str(e)[:50]}")
 
-if _name_ == "_main_":
-    asyncio.run(iniciar_trading())
+# Ejecución inmediata (Adiós al error de name)
+loop = asyncio.get_event_loop()
+loop.run_until_complete(trading_automatico())
