@@ -3,6 +3,7 @@ import json
 import telebot
 from datetime import datetime
 import pytz
+import time
 
 # --- CREDENCIALES ---
 USER_ID = "19974476"
@@ -10,8 +11,9 @@ PASSWORD = "Coste-2108"
 TOKEN = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
 CHAT_ID = "1417066995"
 
-# URL ACTUALIZADA: Añadimos la ruta de conexión para evitar el error 404
-URL_COMANDOS = "wss://ws.xtb.com/demoStream" 
+# Intentaremos con la URL de producción (pero con tus datos demo) 
+# que suele ser más estable en servidores de nube.
+URL_COMANDOS = "wss://ws.xtb.com/demo" 
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -36,7 +38,7 @@ def abrir_op(ws, sym, cmd, vol):
         "arguments": {
             "tradeTransInfo": {
                 "cmd": cmd, "symbol": sym, "type": 0, "volume": vol,
-                "price": 0.0, "sl": 0.0, "tp": 0.0, "customComment": "Bot_Final"
+                "price": 0.0, "sl": 0.0, "tp": 0.0, "customComment": "Bot_Fase_Demo"
             }
         }
     }
@@ -46,7 +48,8 @@ def abrir_op(ws, sym, cmd, vol):
 def on_message(ws, message):
     data = json.loads(message)
     if data.get("status") and "streamSessionId" in data:
-        enviar_telegram("✅ Conectado a XTB.")
+        enviar_telegram("✅ BOT CONECTADO. Esperando señales...")
+        # Suscripción inmediata tras login
         for s in ["GOLD", "EURUSD"]:
             ws.send(json.dumps({"command": "getTickPrices", "arguments": {"level": 0, "symbols": [s]}}))
 
@@ -57,7 +60,6 @@ def on_message(ws, message):
                 historico_precios[s].append(p)
                 if len(historico_precios[s]) > 30: historico_precios[s].pop(0)
                 
-                # Cálculo simple de EMA
                 if len(historico_precios[s]) >= EMA_LENTA:
                     e9 = sum(historico_precios[s][-EMA_RAPIDA:]) / EMA_RAPIDA
                     e21 = sum(historico_precios[s][-EMA_LENTA:]) / EMA_LENTA
@@ -65,13 +67,14 @@ def on_message(ws, message):
                     elif e9 < e21: abrir_op(ws, s, 1, 0.01)
 
 def on_open(ws):
+    # Pequeña pausa para asegurar que el socket esté listo
+    time.sleep(1)
     ws.send(json.dumps({"command": "login", "arguments": {"userId": USER_ID, "password": PASSWORD}}))
 
 def on_error(ws, err):
     print(f"Error detectado: {err}")
 
-# --- EJECUCIÓN DIRECTA ---
-# No usamos 'if name == ...' para evitar el NameError de tu imagen 3
+# --- EJECUCIÓN DIRECTA (Cumpliendo tus reglas de 2026-02-21) ---
 ws_app = websocket.WebSocketApp(
     URL_COMANDOS,
     on_open=on_open,
@@ -79,5 +82,5 @@ ws_app = websocket.WebSocketApp(
     on_error=on_error
 )
 
-print("Bot Iniciado. Conectando...")
+print("Iniciando Bot...")
 ws_app.run_forever()
