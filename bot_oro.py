@@ -20,8 +20,8 @@ def enviar_telegram(mensaje):
 
 def on_message(ws, message):
     data = json.loads(message)
-    if data.get("status") == True and "streamSessionId" in data:
-        print("✅ CONECTADO")
+    if data.get("status") == True:
+        print("CONECTADO")
         enviar_telegram("🚀 ¡Bot Online! Conexión exitosa desde Railway.")
 
 def iniciar():
