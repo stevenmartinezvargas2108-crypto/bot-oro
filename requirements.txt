@@ -1,4 +1,2 @@
 metaapi-cloud-sdk
 pyTelegramBotAPI
-pandas
-pytz
