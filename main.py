@@ -1,4 +1,12 @@
-import asyncio
+[1:15 p.m., 22/2/2026] Jhonnathan: import asyncio
+from metaapi_cloud_sdk import MetaApi
+import telebot
+
+# --- CONFIGURACIÓN ---
+TOKEN_TELEGRAM = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
+CHAT_ID = "1417066995"
+TOKEN_META = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJmMTI3ZTdlZjUzZGJmZmJmODkxYzJkYzViMTc0MjYwNSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVzdC1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcnBjLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio…
+[1:16 p.m., 22/2/2026] Jhonnathan: import asyncio
 from metaapi_cloud_sdk import MetaApi
 import telebot
 
@@ -42,5 +50,5 @@ async def ejecutar_trading():
     except Exception as e:
         bot.send_message(CHAT_ID, f"❌ Error de Conexión: {str(e)[:100]}")
 
-if _name_ == "_main_":
-    asyncio.run(ejecutar_trading())
+# Ejecución directa sin el bloque name/main conflictivo
+asyncio.run(ejecutar_trading())
