@@ -1,4 +1,4 @@
-MetaTrader5
+metaapi-cloud-sdk
 pyTelegramBotAPI
 pandas
 pytz
