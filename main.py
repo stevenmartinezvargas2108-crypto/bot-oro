@@ -1,32 +1,28 @@
-import ssl
-import json
-import websocket
-import time
-import requests
+import websocket, json, ssl, time, requests
 
-# Credenciales cortas para evitar errores
+# 1. Configuración
 U = "19974476"
 P = "Coste-2108"
 T = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
 C = "1417066995"
 W = "wss://ws.xtb.com/demo"
 
-def enviar(m):
+print("Iniciando Bot...")
+
+# 2. Bucle de conexión
+while True:
     try:
-        url = f"https://api.telegram.org/bot{T}/sendMessage"
-        requests.post(url, json={"chat_id": C, "text": m}, timeout=10)
-    except:
-        pass
-
-def iniciar():
-    while True:
-        try:
-            ws = websocket.WebSocketApp(W,
-                on_open=lambda ws: ws.send(json.dumps({"command":"login","arguments":{"userId":U,"password":P}})),
-                on_message=lambda ws, m: enviar("🚀 Bot Online en Railway"))
-            ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
-        except:
-            pass
+        ws = websocket.create_connection(W, sslopt={"cert_reqs": ssl.CERT_NONE})
+        login = {"command": "login", "arguments": {"userId": U, "password": P}}
+        ws.send(json.dumps(login))
+        
+        # Si llega aquí, enviar mensaje a Telegram
+        requests.post(f"https://api.telegram.org/bot{T}/sendMessage", json={"chat_id": C, "text": "🚀 Bot Oro Online"})
+        
+        while True:
+            result = ws.recv()
+            print(result)
+            
+    except Exception as e:
+        print(f"Error: {e}")
         time.sleep(10)
-
-iniciar()
