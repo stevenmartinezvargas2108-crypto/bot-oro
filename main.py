@@ -9,32 +9,34 @@ TOKEN_META = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJmMTI3ZTdlZjUzZGJmZ
 
 bot = telebot.TeleBot(TOKEN_TELEGRAM)
 
-async def trading_automatico():
+async def main():
     api = MetaApi(TOKEN_META)
     try:
-        # Conectar a la cuenta de MetaApi
+        # Conexión
         accounts = await api.metatrader_account_api.get_accounts()
         account = accounts[0]
         connection = account.get_streaming_connection()
         await connection.connect()
         await connection.wait_synchronized()
         
-        bot.send_message(CHAT_ID, "🚀 Robot MT5 Activo (Sin Name Line).\nOperando GOLD y EURUSD.")
+        bot.send_message(CHAT_ID, "🚀 Robot MT5 Online.\nEstrategia Oro/Euro activada.")
 
-        for simbolo in ["GOLD", "EURUSD"]:
-            tick = await connection.terminal_state.wait_tick(simbolo)
+        # Lógica de Trading (Riesgo controlado 0.01)
+        for s in ["GOLD", "EURUSD"]:
+            tick = await connection.terminal_state.wait_tick(s)
             precio = tick['ask']
             
-            # Gestión: Lote 0.01 | SL 2.0 pips | TP 4.0 pips
-            dist = 2.0 if "GOLD" in simbolo else 0.0010
+            # SL y TP automáticos
+            dist = 2.0 if "GOLD" in s else 0.0010
             sl, tp = precio - dist, precio + (dist * 2)
 
-            await connection.create_market_buy_order(simbolo, 0.01, sl, tp)
-            bot.send_message(CHAT_ID, f"🎯 Compra en {simbolo}\nPrecio: {precio}\nSL: {sl:.4f} | TP: {tp:.4f}")
+            await connection.create_market_buy_order(s, 0.01, sl, tp)
+            bot.send_message(CHAT_ID, f"🎯 Compra en {s}\nSL: {sl:.4f} | TP: {tp:.4f}")
 
     except Exception as e:
-        bot.send_message(CHAT_ID, f"❌ Error: {str(e)[:50]}")
+        print(f"Error: {e}")
+        bot.send_message(CHAT_ID, f"❌ Info: {str(e)[:50]}")
 
-# Ejecución inmediata (Adiós al error de name)
-loop = asyncio.get_event_loop()
-loop.run_until_complete(trading_automatico())
+# Esta es la forma moderna que Railway pide
+if _name_ == "_main_":
+    asyncio.run(main())
