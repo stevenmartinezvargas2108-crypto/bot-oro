@@ -20,7 +20,6 @@ def enviar_telegram(mensaje):
 
 def on_message(ws, message):
     data = json.loads(message)
-    # Si el estado es True, la conexión con XTB es exitosa
     if data.get("status") == True:
         print("✅ CONECTADO")
         enviar_telegram("🚀 ¡Bot Online! Conexión exitosa desde Railway.")
@@ -39,5 +38,4 @@ def iniciar():
             pass
         time.sleep(10)
 
-# Lanzamos el bot directamente
 iniciar()
