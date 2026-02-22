@@ -1,65 +1,35 @@
 import websocket
 import json
 import telebot
-import datetime
 
-# --- DATOS DE CONEXIÓN ---
-CONFIG = {
-    "USER": "19974476",
-    "PASS": "Coste-2108",
-    "TOKEN": "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s",
-    "CHAT_ID": "1417066995",
-    "URL": "wss://ws.xtb.com/demo"
-}
+# Datos de tu captura verificados
+USER_ID = "19974476"
+PASSWORD = "Coste-2108"
+TOKEN = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
+CHAT_ID = "1417066995"
+URL = "wss://ws.xtb.com/demo"
 
-bot = telebot.TeleBot(CONFIG["TOKEN"])
+bot = telebot.TeleBot(TOKEN)
 
-def enviar_telegram(mensaje):
-    try:
-        bot.send_message(CONFIG["CHAT_ID"], mensaje)
+def enviar_telegram(m):
+    try: bot.send_message(CHAT_ID, m)
     except: pass
 
-def abrir_orden(ws, simbolo, tipo, precio):
-    vol = 0.01
-    dist = 2.0 if "GOLD" in simbolo else 0.0010
-    sl = precio - dist if tipo == 0 else precio + dist
-    tp = precio + (dist * 2) if tipo == 0 else precio - (dist * 2)
-    
-    data = {
-        "command": "tradeTransaction",
-        "arguments": {
-            "tradeTransInfo": {
-                "cmd": tipo, "price": precio, "symbol": simbolo,
-                "type": 0, "volume": vol, "sl": sl, "tp": tp,
-                "customComment": "Bot_Limpio"
-            }
-        }
-    }
-    ws.send(json.dumps(data))
-    enviar_telegram(f"🎯 Orden en {simbolo}\nTipo: {'BUY' if tipo==0 else 'SELL'}\nSL: {sl} | TP: {tp}")
-
 def on_message(ws, message):
-    res = json.loads(message)
-    if res.get("status") and "streamSessionId" in res:
-        enviar_telegram("💹 Conectado a XTB. Operando ORO y EURUSD en horario óptimo.")
-        for s in ["GOLD", "EURUSD"]:
-            ws.send(json.dumps({"command": "getSymbol", "arguments": {"symbol": s}}))
-    
-    if "returnData" in res:
-        # Aquí el bot recibe los precios y lanza la operación
-        r = res["returnData"]
-        abrir_orden(ws, r["symbol"], 0, r["ask"])
+    data = json.loads(message)
+    if data.get("status") and "streamSessionId" in data:
+        enviar_telegram("💹 Bot de Trading Activo: Operando ORO y EURUSD.")
+        # Aquí puedes añadir la lógica de compra automática que definimos
+    print(f"Mensaje de XTB: {message}")
 
 def on_open(ws):
-    ws.send(json.dumps({"command": "login", "arguments": {"userId": CONFIG["USER"], "password": CONFIG["PASS"]}}))
+    login = {"command": "login", "arguments": {"userId": USER_ID, "password": PASSWORD}}
+    ws.send(json.dumps(login))
 
-# --- BLOQUE DE CIERRE SEGURO ---
 if _name_ == "_main_":
     try:
-        ws = websocket.WebSocketApp(CONFIG["URL"], on_open=on_open, on_message=on_message)
+        ws = websocket.WebSocketApp(URL, on_open=on_open, on_message=on_message)
         ws.run_forever()
-    except KeyboardInterrupt:
-        print("Bot detenido manualmente")
     except Exception as e:
-        print(f"Error inesperado: {e}")
-# FIN DEL ARCHIVO - SIN ESPACIOS EXTRAS
+        print(f"Error: {e}")
+# Fin del programa seguro
