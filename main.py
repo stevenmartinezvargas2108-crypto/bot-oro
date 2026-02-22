@@ -7,14 +7,14 @@ bot = telebot.TeleBot(TOKEN)
 # Tu ID de chat verificado
 CHAT_ID = "1243761899"
 
-print("🤖 El bot está intentando arrancar...")
+print("🤖 Intentando conectar el robot a Telegram...")
 
 try:
-    # Esto envía un mensaje automático al encenderse
-    bot.send_message(CHAT_ID, "🚀 ¡Victoria! Tu robot de Railway ya despertó y está activo.")
-    print("✅ Mensaje enviado a Telegram correctamente.")
+    # Mensaje de prueba al encender
+    bot.send_message(CHAT_ID, "🚀 ¡Éxito! Tu robot ya está funcionando en Railway.")
+    print("✅ Mensaje enviado correctamente.")
 except Exception as e:
     print(f"❌ Error al enviar mensaje: {e}")
 
-# Mantiene al bot escuchando mensajes
+# Mantiene al bot activo
 bot.polling()
