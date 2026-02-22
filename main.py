@@ -1,12 +1,4 @@
-[1:15 p.m., 22/2/2026] Jhonnathan: import asyncio
-from metaapi_cloud_sdk import MetaApi
-import telebot
-
-# --- CONFIGURACIÓN ---
-TOKEN_TELEGRAM = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
-CHAT_ID = "1417066995"
-TOKEN_META = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJmMTI3ZTdlZjUzZGJmZmJmODkxYzJkYzViMTc0MjYwNSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVzdC1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcnBjLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio…
-[1:16 p.m., 22/2/2026] Jhonnathan: import asyncio
+import asyncio
 from metaapi_cloud_sdk import MetaApi
 import telebot
 
@@ -17,38 +9,48 @@ TOKEN_META = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJmMTI3ZTdlZjUzZGJmZ
 
 bot = telebot.TeleBot(TOKEN_TELEGRAM)
 
-async def ejecutar_trading():
+async def main():
     api = MetaApi(TOKEN_META)
     try:
-        # Corregido: Obtenemos las cuentas de forma segura
+        # Conexión con las cuentas de Disney
         accounts = await api.metatrader_account_api.get_accounts()
         if not accounts:
-            bot.send_message(CHAT_ID, "⚠️ No hay cuentas MT5 en MetaApi. Cloud.")
+            print("Sin cuentas.")
             return
-
+            
         account = accounts[0]
-        # Conexión RPC para órdenes directas
-        connection = account.get_rpc_connection()
+        connection = account.get_streaming_connection()
         await connection.connect()
         await connection.wait_synchronized()
         
-        bot.send_message(CHAT_ID, f"✅ MT5 Conectado: {account.name}\nAnalizando Oro y Euro...")
+        bot.send_message(CHAT_ID, "🚀 Robot MT5 ONLINE\nEstrategia de Oro activada.")
 
-        # Gestión de Riesgo (Lotes 0.01)
-        for simbolo in ["GOLD", "EURUSD"]:
-            # Obtener el precio actual (Tick)
-            price_data = await connection.get_symbol_price(simbolo)
-            precio = price_data['ask']
-            
-            # SL y TP básicos para protección
-            pips = 2.0 if "GOLD" in simbolo else 0.0010
-            sl, tp = precio - pips, precio + (pips * 2)
+        while True:
+            for s in ["GOLD", "EURUSD"]:
+                try:
+                    tick = await connection.terminal_state.wait_tick(s)
+                    precio = tick['ask']
+                    
+                    # --- ESTRATEGIA POSITIVA ---
+                    # Para GOLD: dist 2.0 | Para EURUSD: dist 0.0010
+                    dist = 2.0 if "GOLD" in s else 0.0010
+                    
+                    # Stop Loss y Take Profit (Ratio 1:2)
+                    sl = precio - dist
+                    tp = precio + (dist * 2)
 
-            await connection.create_market_buy_order(simbolo, 0.01, sl, tp)
-            bot.send_message(CHAT_ID, f"🎯 Orden enviada: {simbolo}\nLotes: 0.01\nSL: {sl:.2f} | TP: {tp:.2f}")
+                    # Ejecución de la compra (Buy)
+                    await connection.create_market_buy_order(s, 0.01, sl, tp)
+                    bot.send_message(CHAT_ID, f"🎯 Compra en {s}\nSL: {sl:.4f} | TP: {tp:.4f}")
+                    
+                except Exception as e:
+                    print(f"Error en par {s}: {e}")
+
+            # Ciclo de espera para Railway
+            await asyncio.sleep(60)
 
     except Exception as e:
-        bot.send_message(CHAT_ID, f"❌ Error de Conexión: {str(e)[:100]}")
+        bot.send_message(CHAT_ID, f"❌ Error Crítico: {str(e)[:50]}")
 
-# Ejecución directa sin el bloque name/main conflictivo
-asyncio.run(ejecutar_trading())
+# Ejecución directa sin el bloque name conflictivo
+asyncio.run(main())
