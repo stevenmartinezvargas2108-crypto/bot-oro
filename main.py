@@ -1,18 +1,25 @@
-import websocket, json, ssl, time, requests
+import telebot
+import requests
 
-U = "19974476"
-P = "Coste-2108"
-T = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
-C = "1417066995"
-W = "wss://ws.xtb.com/demo"
+# Tu Token que verificamos que está perfecto
+TOKEN = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
+bot = telebot.TeleBot(TOKEN)
 
-while True:
+# Tu ID de chat de Telegram
+CHAT_ID = "1243761899"
+
+print("🚀 Intentando despertar al robot...")
+
+def enviar_mensaje(mensaje):
     try:
-        ws = websocket.create_connection(W, sslopt={"cert_reqs": ssl.CERT_NONE})
-        ws.send(json.dumps({"command": "login", "arguments": {"userId": U, "password": P}}))
-        requests.post(f"https://api.telegram.org/bot{T}/sendMessage", json={"chat_id": C, "text": "🚀 BOT ACTIVO"})
-        while True:
-            ws.recv()
-    except:
-        time.sleep(10)
+        bot.send_message(CHAT_ID, mensaje)
+        print(f"✅ Mensaje enviado: {mensaje}")
+    except Exception as e:
+        print(f"❌ Error al enviar a Telegram: {e}")
 
+def iniciar_bot():
+    print("🤖 El bot ahora está activo y escuchando...")
+    enviar_mensaje("🚀 ¡Hola! Tu robot de XTB ya está despierto y funcionando.")
+
+if _name_ == "_main_":
+    iniciar_bot()
