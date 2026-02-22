@@ -1,3 +1,4 @@
-websocket-client
+MetaTrader5
 pyTelegramBotAPI
+pandas
 pytz
