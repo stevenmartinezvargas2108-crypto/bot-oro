@@ -1,35 +1,15 @@
-import websocket
-import json
 import telebot
 
-# Datos de tu captura verificados
-USER_ID = "19974476"
-PASSWORD = "Coste-2108"
+# Tu Token que está perfecto
 TOKEN = "8081063984:AAGAt736SEOvD5WPQlCieD6TguIOd_MRv6s"
-CHAT_ID = "1417066995"
-URL = "wss://ws.xtb.com/demo"
-
 bot = telebot.TeleBot(TOKEN)
 
-def enviar_telegram(m):
-    try: bot.send_message(CHAT_ID, m)
-    except: pass
+print("🤖 Bot iniciado. Esperando mensaje en Telegram...")
 
-def on_message(ws, message):
-    data = json.loads(message)
-    if data.get("status") and "streamSessionId" in data:
-        enviar_telegram("💹 Bot de Trading Activo: Operando ORO y EURUSD.")
-        # Aquí puedes añadir la lógica de compra automática que definimos
-    print(f"Mensaje de XTB: {message}")
+# Este comando te dirá tu ID real cuando le escribas algo al bot
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
+    print(f"✅ Tu ID real es: {message.chat.id}")
+    bot.reply_to(message, f"¡Hola! Recibí tu mensaje. Tu ID es: {message.chat.id}")
 
-def on_open(ws):
-    login = {"command": "login", "arguments": {"userId": USER_ID, "password": PASSWORD}}
-    ws.send(json.dumps(login))
-
-if _name_ == "_main_":
-    try:
-        ws = websocket.WebSocketApp(URL, on_open=on_open, on_message=on_message)
-        ws.run_forever()
-    except Exception as e:
-        print(f"Error: {e}")
-# Fin del programa seguro
+bot.polling()
